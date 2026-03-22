@@ -2,6 +2,7 @@
 流式响应通用工具
 """
 
+import asyncio
 from typing import AsyncGenerator
 
 from app.core.logger import logger
@@ -36,10 +37,17 @@ async def wrap_stream_with_usage(
                     else EffortType.LOW
                 )
                 grok_model = model_info.grok_model if model_info else "grok-3"
-                await token_mgr.sync_usage(token, effort, grok_model=grok_model)
-                logger.debug(
-                    f"Stream completed, synced usage for token {token[:10]}... (effort={effort.value})"
-                )
+
+                async def _do_sync():
+                    try:
+                        await token_mgr.sync_usage(token, effort, grok_model=grok_model)
+                        logger.info(
+                            f"Stream completed, synced usage for token {token[:10]}... (effort={effort.value})"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Failed to sync stream usage: {e}")
+
+                asyncio.create_task(_do_sync())
             except Exception as e:
                 logger.warning(f"Failed to record stream usage: {e}")
 
