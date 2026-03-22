@@ -251,8 +251,20 @@ class TokenInfo(BaseModel):
             self.last_used_at = int(datetime.now().timestamp() * 1000)
 
     def need_refresh(self, interval_hours: int = 8) -> bool:
-        """检查是否需要刷新配额"""
+        """检查是否需要刷新配额（COOLING 状态）"""
         if self.status != TokenStatus.COOLING:
+            return False
+
+        if self.last_sync_at is None:
+            return True
+
+        now = int(datetime.now().timestamp() * 1000)
+        interval_ms = interval_hours * 3600 * 1000
+        return (now - self.last_sync_at) >= interval_ms
+
+    def need_sync(self, interval_hours: int = 8) -> bool:
+        """检查 ACTIVE 状态的 token 是否需要同步真实配额"""
+        if self.status != TokenStatus.ACTIVE:
             return False
 
         if self.last_sync_at is None:

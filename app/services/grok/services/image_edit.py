@@ -149,9 +149,9 @@ class ImageEditService:
                         if (model_info and model_info.cost.value == "high")
                         else EffortType.LOW
                     )
-                    await token_mgr.consume(current_token, effort)
+                    await token_mgr.sync_usage(current_token, effort)
                     logger.debug(
-                        f"Image edit completed, recorded usage (effort={effort.value})"
+                        f"Image edit completed, synced usage (effort={effort.value})"
                     )
                 except Exception as e:
                     logger.warning(f"Failed to record image edit usage: {e}")

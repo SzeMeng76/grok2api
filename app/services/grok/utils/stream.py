@@ -35,9 +35,10 @@ async def wrap_stream_with_usage(
                     if (model_info and model_info.cost.value == "high")
                     else EffortType.LOW
                 )
-                await token_mgr.consume(token, effort)
+                grok_model = model_info.grok_model if model_info else "grok-3"
+                await token_mgr.sync_usage(token, effort, grok_model=grok_model)
                 logger.debug(
-                    f"Stream completed, recorded usage for token {token[:10]}... (effort={effort.value})"
+                    f"Stream completed, synced usage for token {token[:10]}... (effort={effort.value})"
                 )
             except Exception as e:
                 logger.warning(f"Failed to record stream usage: {e}")

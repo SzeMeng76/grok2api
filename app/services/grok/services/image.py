@@ -360,7 +360,7 @@ class ImageGenerationService:
             )
 
         try:
-            await token_mgr.consume(token, self._get_effort(model_info))
+            await token_mgr.sync_usage(token, self._get_effort(model_info))
         except Exception as e:
             logger.warning(f"Failed to consume token: {e}")
 

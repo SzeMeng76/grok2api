@@ -499,6 +499,7 @@ class TokenManager:
         fallback_effort: EffortType = EffortType.LOW,
         consume_on_fail: bool = True,
         is_usage: bool = True,
+        grok_model: str = "grok-3",
     ) -> bool:
         """
         同步 Token 用量
@@ -510,6 +511,7 @@ class TokenManager:
             fallback_effort: 降级时的消耗力度
             consume_on_fail: 失败时是否降级扣费
             is_usage: 是否记录为一次使用（影响 use_count）
+            grok_model: 查询配额所用的底层模型名
 
         Returns:
             是否成功
@@ -532,7 +534,7 @@ class TokenManager:
         # 尝试 API 同步
         try:
             usage_service = UsageService()
-            result = await usage_service.get(token_str)
+            result = await usage_service.get(token_str, grok_model)
 
             if result and "remainingTokens" in result:
                 new_quota = result.get("remainingTokens")
@@ -895,7 +897,7 @@ class TokenManager:
                     DEFAULT_REFRESH_INTERVAL_HOURS,
                 )
             for token in pool:
-                if token.need_refresh(interval_hours):
+                if token.need_refresh(interval_hours) or token.need_sync(interval_hours):
                     to_refresh.append((pool.name, token))
 
         if not to_refresh:

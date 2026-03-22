@@ -457,7 +457,8 @@ class ChatService:
                         if (model_info and model_info.cost.value == "high")
                         else EffortType.LOW
                     )
-                    await token_mgr.consume(token, effort)
+                    grok_model = model_info.grok_model if model_info else "grok-3"
+                    await token_mgr.sync_usage(token, effort, grok_model=grok_model)
                     logger.info(f"Chat completed: model={model}, effort={effort.value}")
                 except Exception as e:
                     logger.warning(f"Failed to record usage: {e}")
